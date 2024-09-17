@@ -6,6 +6,7 @@ const dbConnection = require("./config/database");
 const { mongoose } = require("mongoose");
 const User = require("./models/User");
 const { validateSignupData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 dbConnection();
 
 app.use(express.json());
@@ -15,6 +16,11 @@ app.post("/signup", async (req, res) => {
 
   try {
     validateSignupData(req);
+
+    const passwordHash = await bcrypt.hash(req.body.password, 10);
+
+    req.body.password = passwordHash;
+
     const user = new User(req.body);
     await user.save();
     res.status(200).json("success");
@@ -23,6 +29,27 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.get("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email: email }).exec();
+
+    if (!user) {
+      res.send("User not found").status(404);
+    }
+
+    const isPassMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPassMatch) {
+      res.send("Password not match").status(401);
+    } else {
+      res.send(user).status(200);
+    }
+  } catch (err) {
+    throw new Error(err.message);
+  }
+});
 //Find user by email
 
 app.get("/feed", async (req, res) => {
