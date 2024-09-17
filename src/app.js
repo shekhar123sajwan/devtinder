@@ -4,7 +4,20 @@ const rootRoutes = require("./routes/root");
 const adminRoute = require("./routes/admin");
 const dbConnection = require("./config/database");
 const { mongoose } = require("mongoose");
+const User = require("./models/User");
 dbConnection();
+
+app.post("/signup", async (req, res) => {
+  const userObj = {
+    firstName: "Sachin",
+    lastName: "sajwan",
+    email: "sachin@gmail.com",
+  };
+
+  const user = new User(userObj);
+  await user.save();
+  res.status(200).json("success");
+});
 
 app.use("/admin", adminRoute);
 
