@@ -19,7 +19,64 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.use("/admin", adminRoute);
+//Find user by email
+
+app.get("/feed", async (req, res) => {
+  const email = req.body.email;
+
+  try {
+    const user = await User.find({ email: email });
+    if (user.length == 0) {
+      res.status(404).send("User Not Found");
+    } else {
+      res.send(user);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.get("/user", async (req, res) => {
+  const email = req.body.email;
+
+  try {
+    const user = await User.find({ email: email });
+    if (user.length == 0) {
+      res.status(404).send("User Not Found");
+    } else {
+      res.send(user);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const dataObj = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(
+      { _id: req.body.userId },
+      dataObj,
+      {
+        returnDocument: "after",
+        runValidators: true,
+      }
+    );
+    res.send(user);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    await User.findByIdAndDelete({ _id: userId });
+    res.send("User Deleted").status(200);
+  } catch (err) {
+    res.status(400).send("something went wrong");
+  }
+});
 
 app.use("^/$|/index(.html)?", rootRoutes);
 
