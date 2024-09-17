@@ -7,16 +7,16 @@ const { mongoose } = require("mongoose");
 const User = require("./models/User");
 dbConnection();
 
+app.use(express.json());
 app.post("/signup", async (req, res) => {
-  const userObj = {
-    firstName: "Sachin",
-    lastName: "sajwan",
-    email: "sachin@gmail.com",
-  };
-
+  const userObj = req.body;
   const user = new User(userObj);
-  await user.save();
-  res.status(200).json("success");
+  try {
+    await user.save();
+    res.status(200).json("success");
+  } catch (err) {
+    res.status(400).json(err.message);
+  }
 });
 
 app.use("/admin", adminRoute);
