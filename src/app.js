@@ -51,17 +51,30 @@ app.get("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
   const dataObj = req.body;
+  const ALLOWED_FIELDS = [
+    "firstName",
+    "lastName",
+    "password",
+    "gender",
+    "about",
+    "skills",
+  ];
+
   try {
-    const user = await User.findByIdAndUpdate(
-      { _id: req.body.userId },
-      dataObj,
-      {
-        returnDocument: "after",
-        runValidators: true,
-      }
+    const isAllowed = Object.keys(dataObj).every((val) =>
+      ALLOWED_FIELDS.includes(val)
     );
+    if (!isAllowed) {
+      res.status(400).send("fields not allowed to update");
+    }
+
+    const user = await User.findByIdAndUpdate({ _id: userId }, dataObj, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     res.send(user);
   } catch (err) {
     res.status(400).send(err.message);

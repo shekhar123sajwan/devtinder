@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      validate(val) {
+        if (!validMail(val)) {
+          throw new Error("Email not vaid");
+        }
+      },
     },
     password: {
       type: String,
@@ -50,5 +55,11 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+const validMail = (mail) => {
+  return /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()\.,;\s@\"]+\.{0,1})+([^<>()\.,;:\s@\"]{2,}|[\d\.]+))$/.test(
+    mail
+  );
+};
 
 module.exports = mongoose.model("User", userSchema);
