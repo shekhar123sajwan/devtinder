@@ -38,32 +38,26 @@ app.get("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email }).lean().exec();
+    const user = await User.findOne({ email: email });
 
     if (!user) {
       res.send("User not found").status(404);
     }
 
-    const isPassMatch = await bcrypt.compare(password, user.password);
+    const isPassMatch = await user.verifyPassword(password);
 
     if (!isPassMatch) {
       res.send("Password not match").status(401);
     } else {
-      const token = await jwt.sign(
-        {
-          user: user,
-        },
-        "devtinder",
-        { expiresIn: 60 * 1 }
-      );
+      const token = await user.getJWT();
 
       res.cookie("token", token, {
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 24 * 7 * 60 * 60 * 1000,
       });
 
-      const userObj = { ...user, token };
-
+      const userObj = Object.assign({}, user._doc);
+      userObj.token = token;
       res.send(userObj).status(200);
     }
   } catch (err) {
