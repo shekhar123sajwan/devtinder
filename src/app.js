@@ -1,15 +1,22 @@
 const express = require("express");
 const app = express();
+const rootRoutes = require("./routes/root");
+const adminRoute = require("./routes/admin");
+const dbConnection = require("./config/database");
+const { mongoose } = require("mongoose");
+dbConnection();
 
-// app.get(/[a-z][0-9]{0,9}$/, (req, res) => {
-//   res.send({ name: "SHEKHAR" });
-// });
+app.use("/admin", adminRoute);
 
-app.get("/user/:userId/:name/:password", (req, res) => {
-  console.log(req.params);
-  res.send("HELLo");
+app.use("^/$|/index(.html)?", rootRoutes);
+
+app.all("*", (req, res) => {
+  res.send("404");
 });
 
-app.listen(3000, () => {
-  console.log("Server listening port 3000");
+mongoose.connection.on("open", () => {
+  console.log("Connected TO DB");
+  app.listen(3000, () => {
+    console.log("Server listening port 3000");
+  });
 });
