@@ -5,13 +5,17 @@ const adminRoute = require("./routes/admin");
 const dbConnection = require("./config/database");
 const { mongoose } = require("mongoose");
 const User = require("./models/User");
+const { validateSignupData } = require("./utils/validation");
 dbConnection();
 
 app.use(express.json());
+
 app.post("/signup", async (req, res) => {
-  const userObj = req.body;
-  const user = new User(userObj);
+  //Validation of data
+
   try {
+    validateSignupData(req);
+    const user = new User(req.body);
     await user.save();
     res.status(200).json("success");
   } catch (err) {
