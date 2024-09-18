@@ -18,4 +18,35 @@ const validMail = (mail) => {
   );
 };
 
-module.exports = { validateSignupData };
+const validateEditProfileData = (req) => {
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "gender",
+    "age",
+    "skills",
+    "about",
+  ];
+
+  const isAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field)
+  );
+
+  return isAllowed ? true : false;
+};
+
+const validateForgotPasswordData = (req) => {
+  const allowedEditFields = ["password", "confirmPassword"];
+
+  const isAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field)
+  );
+
+  return isAllowed ? true : false;
+};
+
+module.exports = {
+  validateSignupData,
+  validateEditProfileData,
+  validateForgotPasswordData,
+};

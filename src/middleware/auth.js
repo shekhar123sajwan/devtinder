@@ -11,9 +11,7 @@ const userAuth = async (req, res, next) => {
       throw new Error("Something went wrong!");
     }
 
-    const user = await User.findOne({ email: decodedObj?.user?.email })
-      .lean()
-      .exec();
+    const user = await User.findOne({ email: decodedObj?.user?.email });
 
     if (!user) {
       throw new Error("Something went wrong!");

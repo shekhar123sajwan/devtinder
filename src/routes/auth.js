@@ -27,7 +27,7 @@ authRouter.get("/login", async (req, res) => {
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      res.send("User not found").status(404);
+      return res.send("User not found").status(404);
     }
 
     const isPassMatch = await user.verifyPassword(password);
@@ -51,4 +51,10 @@ authRouter.get("/login", async (req, res) => {
   }
 });
 
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  res.send("logout Successfull");
+});
 module.exports = authRouter;
