@@ -1,80 +1,22 @@
 const express = require("express");
 const app = express();
-const rootRoutes = require("./routes/root");
-const adminRoute = require("./routes/admin");
+
 const dbConnection = require("./config/database");
 const { mongoose } = require("mongoose");
 const User = require("./models/User");
-const { validateSignupData } = require("./utils/validation");
-const bcrypt = require("bcrypt");
-var jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
-const { userAuth } = require("./middleware/auth");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/requests");
 
 dbConnection();
 
 app.use(cookieParser());
 app.use(express.json());
 
-app.post("/signup", async (req, res) => {
-  //Validation of data
-
-  try {
-    validateSignupData(req);
-
-    const passwordHash = await bcrypt.hash(req.body.password, 10);
-
-    req.body.password = passwordHash;
-
-    const user = new User(req.body);
-    await user.save();
-    res.status(200).json("success");
-  } catch (err) {
-    res.status(400).json(err.message);
-  }
-});
-
-app.get("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email: email });
-
-    if (!user) {
-      res.send("User not found").status(404);
-    }
-
-    const isPassMatch = await user.verifyPassword(password);
-
-    if (!isPassMatch) {
-      res.send("Password not match").status(401);
-    } else {
-      const token = await user.getJWT();
-
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 24 * 7 * 60 * 60 * 1000,
-      });
-
-      const userObj = Object.assign({}, user._doc);
-      userObj.token = token;
-      res.send(userObj).status(200);
-    }
-  } catch (err) {
-    throw new Error(err.message);
-  }
-});
-//Find user by email
-
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-
-    return res.status(200).send(user);
-  } catch (err) {
-    res.status(400).send(err.message);
-  }
-});
+app.use("/", authRouter);
+app.use("/profile", profileRouter);
+app.use("/sendConnectionRequest", requestRouter);
 
 app.get("/feed", async (req, res) => {
   const email = req.body.email;
@@ -146,7 +88,7 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.use("^/$|/index(.html)?", rootRoutes);
+// app.use("^/$|/index(.html)?", rootRoutes);
 
 app.all("*", (req, res) => {
   res.send("404");
